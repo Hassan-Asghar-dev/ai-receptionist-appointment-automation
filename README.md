@@ -18,8 +18,25 @@
 
 ---
 
+## ⚡ Automation Workflow
+
+The core automation is orchestrated through **n8n**, connecting WhatsApp messaging, AI processing, live clinic APIs, persistent conversation memory, appointment workflows, and AI-to-human receptionist handover.
+
+![n8n Automation Workflow](docs/screenshots/n8n-workflow.PNG)
+
+<p align="center">
+  <a href="n8n/workflows/whatsapp-ai-receptionist.json">
+    <strong>📦 View Importable n8n Workflow</strong>
+  </a>
+</p>
+
+> 🔒 The public workflow export is sanitized. Credentials, access tokens, phone number IDs, and other sensitive configuration are excluded.
+
+---
+
 ## 📋 Table of Contents
 
+- [Automation Workflow](#-automation-workflow)
 - [Key Features](#-key-features)
 - [Tech Stack](#-tech-stack)
 - [System Architecture](#-system-architecture)
@@ -29,7 +46,6 @@
 - [Application Screenshots](#-application-screenshots)
 - [Running the Project](#-running-the-project)
 - [Security](#-security)
-- [Planned Repository Additions](#-planned-repository-additions)
 - [Author](#-author)
 
 ---
@@ -172,8 +188,19 @@ dental-clinic-system/
 │   │   └── services/
 │   └── package.json
 │
+├── n8n/
+│   └── workflows/
+│       └── whatsapp-ai-receptionist.json
+│
 ├── docs/
 │   └── screenshots/
+│       ├── dashboard.PNG
+│       ├── appointments.PNG
+│       ├── conversations.PNG
+│       ├── patients.PNG
+│       ├── dentists.PNG
+│       ├── services.PNG
+│       └── n8n-workflow.PNG
 │
 └── README.md
 ```
@@ -266,13 +293,9 @@ npm run dev
 
 ## 🔒 Security
 
-Sensitive configuration such as database credentials, API keys, access tokens, and `.env` files are excluded from version control. A safe `.env.example` template is provided for configuration.
+Sensitive configuration such as database credentials, API keys, access tokens, and `.env` files are excluded from version control.
 
----
-
-## 🗺 Planned Repository Additions
-
-- [ ] Sanitized n8n workflow export
+A safe `.env.example` template is provided for configuration, and the public n8n workflow export has been sanitized to exclude sensitive credentials and environment-specific values.
 
 ---
 
