@@ -2,9 +2,7 @@
 
 # 🦷 AI Receptionist & Appointment Automation System
 
-### A full-stack AI-powered dental clinic automation platform
-
-WhatsApp messaging • Intelligent appointment workflows • Clinic management • Seamless AI-to-human handover
+### A full-stack AI-powered dental clinic automation platform integrating WhatsApp messaging, intelligent appointment workflows, clinic management, and seamless AI-to-human handover.
 
 <p>
   <img src="https://img.shields.io/badge/React-149ECA?style=for-the-badge&logo=react&logoColor=white" alt="React"/>
