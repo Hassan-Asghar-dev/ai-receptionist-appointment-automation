@@ -17,11 +17,7 @@ WhatsApp messaging • Intelligent appointment workflows • Clinic management �
   <img src="https://img.shields.io/badge/WhatsApp_Cloud_API-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" alt="WhatsApp"/>
 </p>
 
-<p>
-  <img src="https://img.shields.io/badge/status-active-success?style=flat-square" alt="status"/>
-  <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="license"/>
-  <img src="https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square" alt="PRs welcome"/>
-</p>
+
 
 </div>
 
