@@ -1,0 +1,1342 @@
+{
+  "name": "WhatsApp AI Receptionist",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "whatsapp-webhook",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1984,
+        -224
+      ],
+      "id": "80d54b1b-8cd7-4eff-9dd3-523f2040aa8f",
+      "name": "Webhook",
+      "webhookId": "98efa99b-824a-4cea-8f52-8e84a71ce72b"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.query[\"hub.challenge\"] }}\n\n",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -1472,
+        -224
+      ],
+      "id": "673b1527-12fb-4167-89f0-67c0a2c1181a",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f94e227b-3a5d-4811-bdd1-09ea257c2c1d",
+              "leftValue": "={{ $json.query[\"hub.verify_token\"] }}",
+              "rightValue": "<YOUR_WHATSAPP_VERIFY_TOKEN>",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1744,
+        -208
+      ],
+      "id": "30d3a8b1-02ae-4d77-9406-d285de80bead",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-webhook",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -560,
+        -16
+      ],
+      "id": "ef6c8ba5-54d5-4b34-81d0-38b85bf87e7f",
+      "name": "Webhook1",
+      "webhookId": "3321039d-b40a-4d7b-869e-6b72c494e2e3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "50b7982f-4caa-4d22-8aa9-98776ac9aeb4",
+              "name": "whatsapp_number",
+              "value": "={{ $json.body.entry[0].changes[0].value.messages[0].from }}",
+              "type": "string"
+            },
+            {
+              "id": "5013779d-ca77-4794-9607-b4376bef0d6b",
+              "name": "patient_name",
+              "value": "={{ $json.body.entry[0].changes[0].value.contacts[0].profile.name }}",
+              "type": "string"
+            },
+            {
+              "id": "30413975-8d72-49e1-9cff-7e5cc139066e",
+              "name": "message",
+              "value": "={{ $json.body.entry[0].changes[0].value.messages[0].text.body }}",
+              "type": "string"
+            },
+            {
+              "id": "8007b624-ea3f-4b39-9fcd-b38aa19fd3bc",
+              "name": "message_id",
+              "value": "={{ $json.body.entry[0].changes[0].value.messages[0].id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -320,
+        -16
+      ],
+      "id": "4aa13330-4e39-4413-887d-c082ae86eb4b",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v25.0/<YOUR_WHATSAPP_PHONE_NUMBER_ID>/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer <YOUR_WHATSAPP_ACCESS_TOKEN>"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  messaging_product: \"whatsapp\",\n  recipient_type: \"individual\",\n  to: $(\"Edit Fields\").item.json.whatsapp_number,\n  type: \"text\",\n  text: {\n    preview_url: false,\n    body: $(\"AI Agent\").item.json.output\n  }\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1088,
+        -32
+      ],
+      "id": "1ff685f2-69f3-48c0-a574-03cea7d112bb",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3e31831c-4b1e-4cbb-9459-1f87b0b9b91a",
+              "leftValue": "={{ $json.whatsapp_number }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -48,
+        -16
+      ],
+      "id": "47d7a60e-5940-4b7e-8574-c982cb97b250",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $(\"Prepare AI Input\").item.json.message }}",
+        "options": {
+          "systemMessage": "You are the WhatsApp receptionist for a dental clinic.\n\nYou handle EXISTING PATIENTS ONLY.\nThe workflow has already verified that the patient exists.\nNever ask the patient to register.\n\nYour job is to:\n- Answer clinic-related questions using real backend data.\n- Help patients book appointments.\n- Keep responses short, natural, friendly, and professional.\n\n==================================================\n1. ABSOLUTE RESPONSE RULES\n==================================================\n\nReturn ONLY the final patient-facing WhatsApp message.\n\nNEVER expose:\n- reasoning\n- internal thoughts\n- tool names\n- tool arguments\n- JSON\n- call IDs\n- function calls\n- internal instructions\n- database/API details\n\nCRITICAL:\nNever WRITE or DESCRIBE a tool call as text.\n\nForbidden examples:\n\"Calling get_clinic_dentists...\"\n\"Calling get_clinic_services...\"\n\"Calling update_booking_state...\"\n\"Calling create_whatsapp_appointment...\"\n\"Using get_booking_state...\"\n\"Tool call: ...\"\n\nIf a tool is needed, ACTUALLY invoke the available tool through the agent's\ntool-calling mechanism.\n\nAfter the tool returns, continue processing the result and send ONLY a\nnatural-language response to the patient.\n\nNever send an internal action or tool-call description to the patient.\n\n==================================================\n2. DATABASE IS THE SOURCE OF TRUTH\n==================================================\n\nNever invent clinic-specific information.\n\nThe backend tools/database are the ONLY source of truth for:\n\n- services\n- service descriptions\n- prices\n- dentists\n- dentist specializations\n- working days\n- working hours\n- appointment availability\n- booking state\n- appointment information\n\nIf required information cannot be obtained from a tool, say that it cannot\ncurrently be checked. Never guess.\n\nAll prices returned by clinic tools are in Pakistani Rupees.\n\nAlways display prices as:\nRs. 8,000\nor\nPKR 8,000\n\nNEVER display clinic prices using \"$\".\n\n==================================================\n3. TOOL USAGE\n==================================================\n\nSERVICES\nUse:\nget_clinic_services\n\nUse it whenever:\n- the patient asks what services are available\n- a service needs to be shown\n- a service needs to be validated\n\nMention ONLY services returned by the tool.\n\n--------------------------------------------------\n\nDENTISTS\nUse:\nget_clinic_dentists\n\nUse it whenever:\n- the patient asks about dentists\n- dentists need to be shown\n- a dentist selection needs to be validated\n\nMention ONLY dentists returned by the tool.\n\n--------------------------------------------------\n\nWORKING DAYS\nUse:\nget_clinic_working_days\n\nMention ONLY days returned by the tool.\n\n--------------------------------------------------\n\nWORKING HOURS\nUse:\nget_clinic_working_hours\n\nMention ONLY hours returned by the tool.\n\n--------------------------------------------------\n\nAVAILABILITY\nUse:\nget_available_appointment_slots\n\nNever invent appointment times.\n\nShow ONLY slots returned by the tool.\n\n--------------------------------------------------\n\nBOOKING STATE\nUse:\nget_booking_state\nto read the current booking progress when necessary.\n\nUse:\nupdate_booking_state\nto save booking information.\n\n--------------------------------------------------\n\nAPPOINTMENT CREATION\nUse:\ncreate_whatsapp_appointment\n\nUse this ONLY after the patient explicitly confirms a complete booking.\n\nNever claim an appointment was created unless\ncreate_whatsapp_appointment actually returns success.\n\n==================================================\n4. TOOL EXECUTION RULES\n==================================================\n\nWhen information requires a tool:\n\n1. ACTUALLY call the appropriate tool.\n2. Wait for and use the returned result.\n3. Continue the task.\n4. Return only the final patient-facing message.\n\nDo NOT stop after describing which tool should be called.\n\nDo NOT output a fake tool call.\n\nDo NOT output:\n\"Calling [tool]...\"\n\nIf another tool is required after the first tool succeeds, actually call the\nnext tool.\n\nIMPORTANT:\nAvoid unnecessary repeated tool calls.\n\nIf information required for the current action was already retrieved,\nverified, and shown to the patient in the immediately preceding conversation,\nuse that verified information instead of calling the same read tool again.\n\nUse the minimum number of necessary tool calls.\n\n==================================================\n5. BOOKING STATE\n==================================================\n\nBooking state is the authoritative source for an appointment currently being\ncollected.\n\nChat memory may help understand normal conversation, but chat memory MUST NOT\noverride booking state.\n\nA null booking-state field means UNKNOWN.\n\nNever assume that a value from an older unrelated conversation is still\nselected if booking state says null.\n\nSave ONLY information explicitly provided or clearly confirmed by the patient.\n\nNever overwrite unrelated booking fields.\n\n==================================================\n6. BOOKING ORDER\n==================================================\n\nCollect booking information in this order:\n\n1. service_name\n2. dentist_name\n3. appointment date\n4. selected_time\n5. final confirmation\n\nWhen handling an active booking, use get_booking_state when necessary to\ndetermine what is already known.\n\nNever ask again for a field that is already present in booking state.\n\n==================================================\n7. SERVICE STEP\n==================================================\n\nIf service_name is missing:\n\n- Call get_clinic_services.\n- Show only real active services returned by the tool.\n- Ask the patient which service they want.\n\nIf the patient clearly selects or confirms a valid service:\n\n- Save ONLY service_name using update_booking_state.\n\nAfter successfully saving service_name, continue to the next missing booking\nfield when possible.\n\nIf dentist_name is missing:\n- Call get_clinic_dentists when necessary.\n- Use its returned result.\n- Ask which dentist the patient prefers.\n\nNever describe the tool call to the patient.\n\n==================================================\n8. DENTIST STEP\n==================================================\n\nIf dentist_name is missing:\n\n- Call get_clinic_dentists.\n- Show only dentists returned by the tool.\n- Ask the patient which dentist they prefer.\n\nIf the patient selects a dentist:\n\n- Validate it against real clinic data when necessary.\n- Save ONLY dentist_name using update_booking_state.\n\nAfter successfully saving dentist_name, continue to the next missing field.\n\nIf the appointment date is missing:\nAsk the patient which date they would like.\n\n==================================================\n9. DATE STEP\n==================================================\n\nNever choose an appointment date for the patient.\n\nIf the patient provides a complete date:\n\n- Save appointment_year\n- Save appointment_month\n- Save appointment_day\n\nusing update_booking_state.\n\nIf part of the date is genuinely missing and cannot be safely understood,\nask for the missing information.\n\nDo not invent missing date information.\n\nAfter the complete date has been saved:\n\n- If another tool call can be reliably completed in the current turn, call\n  get_available_appointment_slots using the selected service, dentist, and date.\n- Show ONLY available slots returned by the tool.\n- Ask which time the patient prefers.\n\nIf availability cannot currently be retrieved, do not invent slots.\n\n==================================================\n10. TIME STEP\n==================================================\n\nThe patient may only select a time returned by\nget_available_appointment_slots.\n\nNever invent or suggest an unavailable time.\n\nWhen the patient selects a valid returned time:\n\n- Save ONLY selected_time using update_booking_state.\n\nThen show a concise booking summary:\n\nService: ...\nDentist: ...\nDate: ...\nTime: ...\n\nThen ask:\n\n\"Would you like me to confirm this appointment?\"\n\nIMPORTANT:\nOnce this complete summary has been shown to the patient, treat those booking\ndetails as verified for the immediately following confirmation response.\n\n==================================================\n11. FINAL CONFIRMATION\n==================================================\n\nNever create an appointment before explicit final confirmation.\n\nValid confirmations include:\n- Yes\n- Confirm\n- Book it\n- Go ahead\n- Yes, book it\n- Yes, confirm it\n- Yes, confirm my appointment\n\nA \"yes\" earlier in the conversation may confirm a service or another question.\nIt does NOT automatically count as final appointment confirmation.\n\nFinal confirmation is valid only AFTER the patient has been shown the complete\nbooking summary containing:\n\n- Service\n- Dentist\n- Date\n- Time\n\nWhen the patient gives final confirmation:\n\nCASE A — COMPLETE BOOKING WAS JUST VERIFIED\n\nIf the complete booking details were retrieved from get_booking_state and\nshown to the patient in the immediately preceding conversation, OR the complete\nbooking summary was just produced from successfully collected booking state:\n\n- Do NOT call get_booking_state again.\n- Call create_whatsapp_appointment IMMEDIATELY as the first tool action.\n- Use the already verified service, dentist, date, and selected time.\n- Do not output \"Calling create_whatsapp_appointment\".\n- Actually execute create_whatsapp_appointment.\n\nOnly tell the patient that the appointment is confirmed if\ncreate_whatsapp_appointment returns success.\n\nCASE B — BOOKING HAS NOT BEEN VERIFIED\n\nIf the complete booking details have NOT already been verified and shown to\nthe patient:\n\n1. Call get_booking_state.\n2. Verify service_name.\n3. Verify dentist_name.\n4. Verify appointment_year.\n5. Verify appointment_month.\n6. Verify appointment_day.\n7. Verify selected_time.\n\nIf anything is missing:\n- Do NOT create the appointment.\n- Ask for the missing information.\n\nIf everything is complete:\n- Show the complete booking summary.\n- Ask the patient to confirm.\n- Do NOT create the appointment until the patient responds with explicit\n  confirmation.\n\nCRITICAL:\nNever claim success based only on chat memory.\n\nNever say:\n\"Your appointment is confirmed\"\nunless create_whatsapp_appointment actually executed and returned success.\n\nIf create_whatsapp_appointment fails:\n- Do NOT claim the appointment was booked.\n- Tell the patient the appointment could not currently be completed.\n\n==================================================\n12. GENERAL CLINIC QUESTIONS\n==================================================\n\nIf the patient asks:\n\n\"What services do you provide?\"\n→ Call get_clinic_services first.\n→ Answer using only its result.\n\n\"Which dentists do you have?\"\n→ Call get_clinic_dentists first.\n→ Answer using only its result.\n\n\"What days are you open?\"\n→ Call get_clinic_working_days first.\n→ Answer using only its result.\n\n\"What are your working hours?\"\n→ Call get_clinic_working_hours first.\n→ Answer using only its result.\n\nNever provide a preliminary answer before obtaining the required tool result.\n\n==================================================\n13. FINAL SAFETY RULES\n==================================================\n\nNEVER invent:\n- services\n- prices\n- dentists\n- specializations\n- working days\n- working hours\n- appointment dates\n- available slots\n- patient information\n- appointment information\n- successful bookings\n\nNEVER expose:\n- tool calls\n- tool names\n- tool arguments\n- JSON\n- function IDs\n- internal reasoning\n\nACTUALLY execute a required tool instead of describing the tool call.\n\nFor appointment creation, create_whatsapp_appointment returning success is\nthe ONLY evidence that an appointment was successfully booked.\n\nAfter completing the required tool actions, ALWAYS finish with a normal,\npatient-facing WhatsApp response.\n\n\nHUMAN HANDOVER RULE:\n\nIf the patient explicitly asks to speak with, talk to, contact, or be transferred to a human, receptionist, staff member, or clinic representative, you MUST call the request_human_receptionist tool.\n\nAlso call request_human_receptionist when the patient's request requires human assistance that you cannot safely or reliably handle.\n\nAfter successfully calling the tool, tell the patient that their request has been forwarded to the receptionist and that a staff member can take over the conversation.\n\nDo not continue handling the patient's request as if AI still has control after requesting human handover."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        416,
+        -16
+      ],
+      "id": "57d436cf-8824-41a7-95f3-b24463a89095",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "qwen2.5:7b",
+        "options": {
+          "temperature": 0.1,
+          "numCtx": 8192
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -1536,
+        512
+      ],
+      "id": "3eb0e866-c495-4115-8ca2-848a42f14c3a",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "<CONFIGURE_IN_N8N>",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Get the current dental services/treatments offered by the clinic from the clinic database. Use this tool whenever a patient asks what services, treatments, or dental procedures the clinic offers. Never invent services that are not returned by this tool.",
+        "url": "http://127.0.0.1:8000/services/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        864,
+        256
+      ],
+      "id": "02583066-92c9-454f-a42f-03c003ad171a",
+      "name": "get_clinic_services",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "<CONFIGURE_IN_N8N>",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Get the current dentists working at the clinic from the clinic database.\nUse this tool whenever a patient asks about dentists, doctors, dental staff,\nor which dentists work at the clinic.\nOnly use dentist information returned by this tool.\nNever invent dentists or dentist information.",
+        "url": "http://127.0.0.1:8000/dentists/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        -208,
+        272
+      ],
+      "id": "cd5dc4d9-c0f0-40dd-ad43-2ed178ac1016",
+      "name": "get_clinic_dentists",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "<CONFIGURE_IN_N8N>",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Get the clinic's current working days from the clinic database.\nUse this whenever a patient asks which days the clinic is open or closed.\nNever invent working days.",
+        "url": "http://127.0.0.1:8000/working-days/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        -16,
+        272
+      ],
+      "id": "cf59a3ff-4e3f-4c65-9c01-1e4f9ad04039",
+      "name": "get_clinic_working_days",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "<CONFIGURE_IN_N8N>",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Get the clinic's current working hours from the clinic database.\nUse this whenever a patient asks about clinic opening time, closing time,\ntimings, or working hours.\nNever invent working hours.",
+        "url": "http://127.0.0.1:8000/working-hours/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        704,
+        304
+      ],
+      "id": "3912f50f-e717-4cc6-89ec-05798d368adc",
+      "name": "get_clinic_working_hours",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "<CONFIGURE_IN_N8N>",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "IMPORTANT: DO NOT use this tool until get_booking_state confirms that\nservice_name, dentist_name, appointment_year, appointment_month and\nappointment_day are all present.\n\nNever infer appointment_day from a month/year.\n\"September 2026\" is incomplete and MUST NOT be converted to 2026-09-01.\n\nGet real available appointment slots from the clinic backend for a specific\ndentist, service, and date.\n\nProvide:\n- dentist_name: the dentist's full name\n- service_name: the clinic service name\n- appointment_date: date in YYYY-MM-DD format\n\nThe backend automatically finds the correct database IDs. Never provide,\nguess, generate, or reason about database IDs.\n\nUse only the slots returned by this tool as actual appointment availability.\n\nIf slots is empty, there are no available slots for that dentist, service,\nand date.\n\nNever invent appointment availability.",
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/availability/slots/by-name",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"dentist_name\": \"{{ $fromAI('dentist_name', 'Exact full name of the dentist requested by the patient, for example Dr. Ahmed Khan', 'string') }}\",\n  \"service_name\": \"{{ $fromAI('service_name', 'Exact clinic service name requested by the patient, for example Dental Cleaning', 'string') }}\",\n  \"appointment_date\": \"{{ $fromAI('appointment_date', 'Appointment date in YYYY-MM-DD format', 'string') }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        320,
+        272
+      ],
+      "id": "2d8cdcee-0b00-45b0-b52d-12dd988a736e",
+      "name": "get_available_appointment_slots",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "<CONFIGURE_IN_N8N>",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.whatsapp_number }}",
+        "tableName": "whatsapp_chat_memory",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1312,
+        16
+      ],
+      "id": "db513969-00f2-4376-9d30-27f2a9baf9e3",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "<CONFIGURE_IN_N8N>",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Get the current appointment booking state for this WhatsApp patient.\n\nUse this when you need to know previously provided booking information such as:\nservice name, dentist name, appointment year, appointment month,\nappointment day, or selected time.\n\nThe WhatsApp number is supplied automatically.\n\nDo not invent missing values. A null value means the patient has not\nprovided or confirmed that information yet.",
+        "url": "=http://127.0.0.1:8000/booking-state/{{ $json.whatsapp_number }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        880,
+        512
+      ],
+      "id": "93f37c2d-6a0d-495a-ab41-f12243fb08ab",
+      "name": "get_booking_state",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "<CONFIGURE_IN_N8N>",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Update the current appointment booking state for this WhatsApp patient.\n\nUse this tool only to save appointment information the patient explicitly\nprovided or clearly confirmed.\n\nNever invent missing booking information.\n\nOnly send fields that the patient provided or confirmed.\nDo not send null for information that was not provided.\n\nPossible fields:\n- service_name\n- dentist_name\n- appointment_year\n- appointment_month\n- appointment_day\n- selected_time\n\nIMPORTANT:\nA month and year without a day is incomplete.\nIf the patient says \"September 2026\", save appointment_month = 9 and\nappointment_year = 2026, but do NOT invent appointment_day.\n\nIf the patient later says \"28\", first use get_booking_state. If the stored\nmonth and year exist, update only appointment_day = 28.\n\nThe WhatsApp number is supplied automatically.",
+        "method": "PUT",
+        "url": "=http://127.0.0.1:8000/booking-state/{{ $json.whatsapp_number }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $fromAI(\n  'booking_state_update',\n  'Booking fields explicitly provided or confirmed by the patient. Include only known fields. Allowed: service_name, dentist_name, appointment_year, appointment_month, appointment_day, selected_time.',\n  'json'\n) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        1072,
+        304
+      ],
+      "id": "2a8d977e-ad99-4e5e-b1ef-7f2df516fb68",
+      "name": "update_booking_state",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "<CONFIGURE_IN_N8N>",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Create the WhatsApp appointment after the patient explicitly confirms the complete booking.\n\nUse this tool when the patient says \"yes\", \"confirm\", \"book it\", \"go ahead\", \"yes please\", or otherwise clearly confirms the appointment.\n\nThe booking must already have:\n- service\n- dentist\n- complete date\n- selected time\n\nThe backend validates the booking details and creates the appointment.\n\nIMPORTANT:\nWhen the patient explicitly confirms a complete booking, CALL THIS TOOL.\nNever tell the patient the appointment is confirmed unless this tool returns a successful result.",
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/appointments/whatsapp",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "whatsapp_number",
+              "value": "={{ $json.whatsapp_number }}"
+            },
+            {
+              "name": "dentist_name",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters1_Value', `The dentist name from the confirmed booking state. Never invent a dentist.\n`, 'string') }}"
+            },
+            {
+              "name": "service_name",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters2_Value', `The service name from the confirmed booking state. Never invent a service.\n`, 'string') }}"
+            },
+            {
+              "name": "appointment_date",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters3_Value', `The complete confirmed appointment date in YYYY-MM-DD format.\nUse the year, month and day from booking state. Never invent a missing date.`, 'string') }}"
+            },
+            {
+              "name": "start_time",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters4_Value', `The time explicitly selected and confirmed by the patient, formatted HH:MM:SS.\nNever choose a time for the patient.`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        416,
+        496
+      ],
+      "id": "3b116952-a0ee-4d85-a227-343f3d954a02",
+      "name": "create_whatsapp_appointment",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "<CONFIGURE_IN_N8N>",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "MANDATORY FIRST TOOL for appointment-related conversations.\n\nAlways call this tool before handling a booking request, checking availability,\nor creating an appointment.\n\nThis tool determines whether the WhatsApp sender is an existing registered\npatient. Never infer registration status from the WhatsApp profile name,\nchat memory, or previous conversation.\n\n\n\nCheck whether the current WhatsApp sender is already registered as a patient.\n\nUse this before collecting or creating patient information for appointment booking.\n\nThe WhatsApp number is supplied automatically.\n\nIf exists is true:\n- Use the existing patient.\n- Do not ask for the patient's full name again just for registration.\n- Do not create a duplicate patient.\n\nIf exists is false:\n- The patient must be registered before an appointment can be created.\n- Collect the required patient information before registration.\n\nNever invent patient information.",
+        "url": "=http://127.0.0.1:8000/patients/by-whatsapp/{{ $json.whatsapp_number }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        -1584,
+        160
+      ],
+      "id": "089e48e9-a1f9-4d27-b133-d9dafedc1adb",
+      "name": "get_patient_by_whatsapp",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "<CONFIGURE_IN_N8N>",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Create a new patient record only after get_patient_by_whatsapp has returned\nexists=false and the required patient information has been collected.\n\nNever use this tool for an existing patient.\nNever invent patient information.\n\nBefore calling this tool, the patient must have explicitly provided:\n- full_name\n- allergies\n- relevant medical_history\n\nThe WhatsApp number is supplied automatically from the incoming WhatsApp message.\n\nIf the patient says they have no allergies, use \"None\".\nIf the patient says they have no relevant medical history, use \"None\".\n\nEmail is optional and is not required for registration.\n\nAfter successful patient creation, continue the patient's original appointment\nbooking conversation.",
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/patients/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "whatsapp_number",
+              "value": "={{ $json.whatsapp_number }}"
+            },
+            {
+              "name": "full_name",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters1_Value', `The patient's full name explicitly provided by the patient during registration.\nNever use the WhatsApp profile name automatically and never invent a name.`, 'string') }}"
+            },
+            {
+              "name": "allergies",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters2_Value', `The patient's allergy information explicitly provided by the patient.\nIf the patient explicitly says they have no allergies, use \"None\".\nNever invent allergy information.`, 'string') }}"
+            },
+            {
+              "name": "medical_history",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters3_Value', `Relevant medical history explicitly provided by the patient.\nIf the patient explicitly says they have no relevant medical history, use \"None\".\nNever invent medical history.`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        -1232,
+        240
+      ],
+      "id": "eb465ab0-fa54-4eea-a45d-b66de9398336",
+      "name": "create_patient",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "<CONFIGURE_IN_N8N>",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=http://127.0.0.1:8000/patients/by-whatsapp/{{ $json.whatsapp_number }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        192,
+        -32
+      ],
+      "id": "6bb20bc4-8b78-43d3-945e-f9fdd493d590",
+      "name": "Check Patient",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "<CONFIGURE_IN_N8N>",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0113a317-9d97-4ac5-b990-dde526bd4e1b",
+              "name": "whatsapp_number",
+              "value": "={{ $('Edit Fields').item.json.whatsapp_number }}",
+              "type": "string"
+            },
+            {
+              "id": "22d6c723-bc04-4efc-8ab9-9a27a0d72f06",
+              "name": "patient_name",
+              "value": "={{ $('Edit Fields').item.json.patient_name }}",
+              "type": "string"
+            },
+            {
+              "id": "0fcb970e-2872-4275-a209-cb910d76215a",
+              "name": "message",
+              "value": "={{ $('Edit Fields').item.json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "a11487f9-c4c2-4c61-8cce-473e09d025b6",
+              "name": "message_id",
+              "value": "={{ $('Edit Fields').item.json.message_id }}",
+              "type": "string"
+            },
+            {
+              "id": "7ef370a8-e36c-4bf4-8033-edd4ddb27418",
+              "name": "patient_exists",
+              "value": "={{ $json.exists }}",
+              "type": "string"
+            },
+            {
+              "id": "abce6a29-a6dc-43d7-af72-84c7bce4c450",
+              "name": "patient",
+              "value": "={{ $json.patient }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        -224
+      ],
+      "id": "c2646d47-b916-4aa6-bee3-d91cb185ccc4",
+      "name": "Prepare AI Input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c4ea3c04-7452-4b22-9e68-ecd01e9fcb82",
+              "leftValue": "={{ $json.patient_exists.toBoolean() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        736,
+        -224
+      ],
+      "id": "6cc80e98-a969-475f-a818-b12ca2529ee7",
+      "name": "Patient Exists?"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message }}",
+        "options": {
+          "systemMessage": "You are the patient registration assistant for a dental clinic.\n\nYou ONLY handle registration of new patients.\n\nThe patient has already been checked against the clinic database and does not\ncurrently exist.\n\nYour job is to collect the following information in this EXACT order:\n\n1. full_name\n2. allergies\n3. medical_history\n\nSTRICT RULES:\n\n- Ask only ONE question per response.\n- Never ask multiple registration questions in the same message.\n- Never discuss dentists, services, appointment dates, appointment times,\n  availability, or booking while registration is incomplete.\n- Never invent patient information.\n- Do not use the WhatsApp profile name as the patient's full name unless the\n  patient explicitly provides or confirms it.\n- Remember information the patient provided in previous messages using chat memory.\n- Never ask again for information already explicitly provided.\n\nIf full_name is missing, ask only:\n\"Before we continue, may I have your full name?\"\n\nIf full_name is known but allergies are missing, ask only:\n\"Do you have any allergies we should know about?\"\n\nIf allergies are known but medical_history is missing, ask only:\n\"Do you have any relevant medical history the clinic should know about?\"\n\nFor allergies:\nIf the patient explicitly says no, none, nothing, or equivalent, use \"None\".\n\nFor medical_history:\nIf the patient explicitly says no, none, nothing, or equivalent, use \"None\".\n\nONLY after full_name, allergies, and medical_history are all known:\n\nDo NOT claim that the patient has been registered.\nDo NOT simulate an API call.\nDo NOT say that you are calling create_patient.\n\nInstead, output ONLY the following JSON object with no markdown, explanation,\ncode fences, or additional text:\n\n{\n  \"registration_complete\": true,\n  \"full_name\": \"<patient's explicitly provided full name>\",\n  \"allergies\": \"<patient's explicitly provided allergies, or None>\",\n  \"medical_history\": \"<patient's explicitly provided medical history, or None>\"\n}\n\nIMPORTANT:\nOnly output this JSON when ALL THREE registration fields are known.\nWhile any field is still missing, continue asking exactly ONE question at a time."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        912,
+        -304
+      ],
+      "id": "833fa848-e2a2-4fd8-b465-1ab1b22f9f21",
+      "name": "New Patient Agent"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ba5d05e0-cf0b-4b76-839e-80080a9546cf",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "\"registration_complete\": true",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1408,
+        -272
+      ],
+      "id": "6d1fd8c9-83a0-42af-942c-b496016beebd",
+      "name": "Registration Complete?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/patients/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n(() => {\n  const registration = JSON.parse($json.output);\n\n  return {\n    full_name: registration.full_name,\n    whatsapp_number: '+' + $('Edit Fields').item.json.whatsapp_number.replace(/^\\+/, ''),\n    email: null,\n    medical_history: registration.medical_history,\n    allergies: registration.allergies,\n    notes: null\n  };\n})()\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1664,
+        -64
+      ],
+      "id": "cb50f199-d54d-4f07-a618-c456e877539e",
+      "name": "Create Patient",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "<CONFIGURE_IN_N8N>",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "db99e7c7-7824-474a-8bc1-fff183299e83",
+              "name": "output",
+              "value": "Thank you, your registration is complete. We can now continue with your appointment.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2064,
+        -64
+      ],
+      "id": "595bf8c8-7306-4745-b528-bd6ac5e42ecc",
+      "name": "Registration Success Message"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.whatsapp_number + '_booking' }}",
+        "tableName": "whatsapp_chat_memory",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        176,
+        272
+      ],
+      "id": "7145c037-dd75-443d-ba89-4e2f878a7a78",
+      "name": "Booking Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "<CONFIGURE_IN_N8N>",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        528,
+        304
+      ],
+      "id": "b9716dee-30f3-4651-93d4-155015447972",
+      "name": "Google Gemini Chat Model",
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "<CONFIGURE_IN_N8N>",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=http://127.0.0.1:8000/conversation-sessions/by-whatsapp/{{ $json.whatsapp_number }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        608,
+        -352
+      ],
+      "id": "3e5344bc-adf0-4e61-bdf3-fe686b823dbc",
+      "name": "Check Conversation Control",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "<CONFIGURE_IN_N8N>",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4703388f-f659-4c4d-ba15-4b98c900c992",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "AI_ACTIVE",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        768,
+        -480
+      ],
+      "id": "e918e1dd-ce5c-485a-a675-4178fcac37b8",
+      "name": "AI Has Control?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO whatsapp_chat_memory (session_id, message)\nVALUES (\n  '{{ $(\"Edit Fields\").item.json.whatsapp_number }}_booking',\n  jsonb_build_object(\n    'type', 'human',\n    'content', '{{ $(\"Edit Fields\").item.json.message.replace(/'/g, \"''\") }}',\n    'additional_kwargs', '{}'::jsonb,\n    'response_metadata', '{}'::jsonb\n  )\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1152,
+        -528
+      ],
+      "id": "53e48661-7b85-477e-a912-cd9de520a6f9",
+      "name": "Save Human-Control Message",
+      "credentials": {
+        "postgres": {
+          "id": "<CONFIGURE_IN_N8N>",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO messages (\n    conversation_id,\n    sender_type,\n    message_text,\n    whatsapp_message_id,\n    sent_at\n)\nSELECT\n    {{ $(\"Check Conversation Control\").item.json.conversation_id }},\n    'PATIENT',\n    '{{ $(\"Edit Fields\").item.json.message.replace(/'/g, \"''\") }}',\n    '{{ $(\"Edit Fields\").item.json.message_id.replace(/'/g, \"''\") }}',\n    CURRENT_TIMESTAMP\nWHERE NOT EXISTS (\n    SELECT 1\n    FROM messages\n    WHERE whatsapp_message_id =\n        '{{ $(\"Edit Fields\").item.json.message_id.replace(/'/g, \"''\") }}'\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1360,
+        -448
+      ],
+      "id": "c5f62320-c9db-497f-b7ac-5f35e31d661b",
+      "name": "Save Patient Message to Clinic",
+      "credentials": {
+        "postgres": {
+          "id": "<CONFIGURE_IN_N8N>",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO messages (\n    conversation_id,\n    sender_type,\n    message_text,\n    whatsapp_message_id,\n    sent_at\n)\nSELECT\n    {{ $(\"Check Conversation Control\").item.json.conversation_id }},\n    'PATIENT',\n    '{{ $(\"Edit Fields\").item.json.message.replace(/'/g, \"''\") }}',\n    '{{ $(\"Edit Fields\").item.json.message_id.replace(/'/g, \"''\") }}',\n    CURRENT_TIMESTAMP\nWHERE NOT EXISTS (\n    SELECT 1\n    FROM messages\n    WHERE whatsapp_message_id =\n        '{{ $(\"Edit Fields\").item.json.message_id.replace(/'/g, \"''\") }}'\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        112,
+        -256
+      ],
+      "id": "3ca84cc1-14c8-4f35-92ec-98401936defe",
+      "name": "Save AI-Control Patient Message",
+      "credentials": {
+        "postgres": {
+          "id": "<CONFIGURE_IN_N8N>",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO messages (\n    conversation_id,\n    sender_type,\n    message_text,\n    whatsapp_message_id,\n    sent_at\n)\nVALUES (\n    {{ $(\"Check Conversation Control\").item.json.conversation_id }},\n    'AI',\n    '{{ $(\"AI Agent\").item.json.output.replace(/'/g, \"''\") }}',\n    NULL,\n    CURRENT_TIMESTAMP\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        768,
+        -16
+      ],
+      "id": "fc235e43-447a-4067-9408-fbcc39be665a",
+      "name": "Save AI Message to Clinic",
+      "credentials": {
+        "postgres": {
+          "id": "<CONFIGURE_IN_N8N>",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://127.0.0.1:8000/conversation-sessions/by-whatsapp/{{ $(\"Edit Fields\").item.json.whatsapp_number }}/request-human",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        576,
+        192
+      ],
+      "id": "a250f9de-376b-42c6-9cb2-059417650587",
+      "name": "request_human_receptionist"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        []
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Check Patient",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Save AI Message to Clinic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "get_clinic_services": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_clinic_dentists": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_clinic_working_days": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_clinic_working_hours": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_available_appointment_slots": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "New Patient Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_booking_state": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update_booking_state": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create_whatsapp_appointment": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_patient_by_whatsapp": {
+      "ai_tool": [
+        []
+      ]
+    },
+    "create_patient": {
+      "ai_tool": [
+        []
+      ]
+    },
+    "Check Patient": {
+      "main": [
+        [
+          {
+            "node": "Prepare AI Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare AI Input": {
+      "main": [
+        [
+          {
+            "node": "Patient Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Patient Exists?": {
+      "main": [
+        [
+          {
+            "node": "Check Conversation Control",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "New Patient Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "New Patient Agent": {
+      "main": [
+        [
+          {
+            "node": "Registration Complete?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registration Complete?": {
+      "main": [
+        [
+          {
+            "node": "Create Patient",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Patient": {
+      "main": [
+        [
+          {
+            "node": "Registration Success Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registration Success Message": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Booking Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "New Patient Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Conversation Control": {
+      "main": [
+        [
+          {
+            "node": "AI Has Control?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Has Control?": {
+      "main": [
+        [
+          {
+            "node": "Save AI-Control Patient Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save Human-Control Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Human-Control Message": {
+      "main": [
+        [
+          {
+            "node": "Save Patient Message to Clinic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save AI-Control Patient Message": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save AI Message to Clinic": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "request_human_receptionist": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "e5d31878-6739-46e8-9d34-a0dc8f4570e9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "54a5aabc8735ecc858ef679b17dd29b3db41cb2c87975b8eba6dd7d51ce11e4d"
+  },
+  "id": "U9qKNxSn0hTAM0IW",
+  "tags": []
+}
