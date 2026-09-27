@@ -84,7 +84,7 @@
 
 **AI & Automation**
 - n8n
-- Google Gemini
+- ollama/Google Gemini API
 - Persistent PostgreSQL chat memory
 
 **Messaging**
