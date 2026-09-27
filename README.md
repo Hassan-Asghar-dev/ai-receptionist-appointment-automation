@@ -14,8 +14,6 @@
   <img src="https://img.shields.io/badge/WhatsApp_Cloud_API-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" alt="WhatsApp"/>
 </p>
 
-
-
 </div>
 
 ---
@@ -28,6 +26,7 @@
 - [AI-to-Human Handover](#-ai-to-human-handover)
 - [Project Structure](#-project-structure)
 - [Core Modules](#-core-modules)
+- [Application Screenshots](#-application-screenshots)
 - [Running the Project](#-running-the-project)
 - [Security](#-security)
 - [Planned Repository Additions](#-planned-repository-additions)
@@ -84,7 +83,7 @@
 
 **AI & Automation**
 - n8n
-- ollama/Google Gemini API
+- Ollama / Google Gemini API
 - Persistent PostgreSQL chat memory
 
 **Messaging**
@@ -161,6 +160,7 @@ dental-clinic-system/
 │   │   ├── routers/
 │   │   ├── schemas/
 │   │   └── services/
+│   ├── .env.example
 │   └── requirements.txt
 │
 ├── frontend/
@@ -172,6 +172,9 @@ dental-clinic-system/
 │   │   └── services/
 │   └── package.json
 │
+├── docs/
+│   └── screenshots/
+│
 └── README.md
 ```
 
@@ -181,7 +184,7 @@ dental-clinic-system/
 
 - 🧑‍⚕️ Patient Management
 - 🦷 Dentist Management
-- 💉 Services & Treatment Management
+- 🩺 Services & Treatment Management
 - 🗓 Working Days & Working Hours
 - 📌 Appointment Management
 - 🕓 Appointment Availability
@@ -189,6 +192,46 @@ dental-clinic-system/
 - 🗨 Conversation Management
 - 🤝 AI/Human Conversation Control
 - 🔐 Authentication
+
+---
+
+## 📸 Application Screenshots
+
+### 🏠 Dashboard
+
+Overview of clinic activity and key operational information.
+
+![Dashboard](docs/screenshots/dashboard.PNG)
+
+### 📅 Appointment Management
+
+Manage appointments, booking details, statuses, dentists, services, dates, and times.
+
+![Appointments](docs/screenshots/appointments.PNG)
+
+### 💬 AI & Receptionist Conversations
+
+Unified WhatsApp conversation view supporting persistent chat history and AI-to-human receptionist handover.
+
+![Conversations](docs/screenshots/conversations.PNG)
+
+### 👥 Patient Management
+
+View and manage registered patients and their clinic information.
+
+![Patients](docs/screenshots/patients.PNG)
+
+### 🦷 Dentist Management
+
+Manage dentist profiles and clinic availability information.
+
+![Dentists](docs/screenshots/dentists.PNG)
+
+### 🩺 Services & Treatments
+
+Manage clinic services and treatment information.
+
+![Services](docs/screenshots/services.PNG)
 
 ---
 
@@ -203,7 +246,7 @@ cd backend
 pip install -r requirements.txt
 ```
 
-Create a `.env` file with the required database, authentication, and WhatsApp configuration.
+Create a `.env` file using `backend/.env.example` as the configuration template and provide your own database, authentication, WhatsApp, and n8n credentials.
 
 Start FastAPI:
 
@@ -223,15 +266,13 @@ npm run dev
 
 ## 🔒 Security
 
-Sensitive configuration such as database credentials, API keys, access tokens, and `.env` files are excluded from version control.
+Sensitive configuration such as database credentials, API keys, access tokens, and `.env` files are excluded from version control. A safe `.env.example` template is provided for configuration.
 
 ---
 
 ## 🗺 Planned Repository Additions
 
 - [ ] Sanitized n8n workflow export
-- [ ] Environment configuration example
-- [ ] Application screenshots
 
 ---
 
